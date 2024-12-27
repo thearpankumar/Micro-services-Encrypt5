@@ -1,0 +1,60 @@
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-service
+  labels:
+    app: node
+spec:
+  selector:
+    app: node
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP  # Use ClusterIP since the Ingress will handle external access
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-deployment
+  labels:
+    app: node
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: node
+  template:
+    metadata:
+      labels:
+        app: node
+    spec:
+      containers:
+      - name: node
+        image: arpankumar1119/ec5-frontend  
+        ports:
+        - containerPort: 3000
+
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: node-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /  # Ensures correct URL routing
+spec:
+  rules:
+    - host: nodee5test.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: node-service
+                port:
+                  number: 3000

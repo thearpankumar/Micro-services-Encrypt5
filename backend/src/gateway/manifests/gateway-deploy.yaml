@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  labels:
+    app: gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gateway
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 10
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: arpankumar1119/ec5-gateway:latest
+          envFrom:
+            - configMapRef:
+                name: gateway-configmap
+            - secretRef:
+                name: gateway-secret
+          volumeMounts:
+            - name: gateway-storage
+              mountPath: /var/lib/upload  # Change this to the desired directory path inside the container
+      volumes:
+        - name: gateway-storage
+          persistentVolumeClaim:
+            claimName: gateway-pvc  # Reference the PVC here
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gateway-pv
+spec:
+  capacity:
+    storage: 100Gi  # Adjust this as per your requirement
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/upload  # The path on your Minikube VM to use as storage
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gateway-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi  # Must match the size of the PV
