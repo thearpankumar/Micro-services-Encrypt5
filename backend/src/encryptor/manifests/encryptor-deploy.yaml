@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: encryptor
+  labels:
+    app: encryptor
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: encryptor
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 8
+  template:
+    metadata:
+      labels:
+        app: encryptor
+    spec:
+      containers:
+        - name: converter
+          image: arpankumar1119/ec5-gpu-encryption
+          envFrom:
+            - configMapRef:
+                name: encryptor-configmap
+            - secretRef:
+                name: encryptor-secret
+          resources:
+            limits:
+              nvidia.com/gpu: 1  # Request 1 GPU
+            requests:
+              nvidia.com/gpu: 1  # Request 1 GPU

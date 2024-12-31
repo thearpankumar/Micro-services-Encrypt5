@@ -1,9 +1,7 @@
-import os, gridfs, pika, json
+import os, pika, json
 from flask import Flask, request, send_file, send_from_directory
-from flask_pymongo import PyMongo
 from auth import validate
 from auth_svc import access
-from storage import util
 from bson.objectid import ObjectId
 from werkzeug.utils import secure_filename
 
@@ -16,7 +14,7 @@ server.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Set a limit for uploaded files (e.g., 16MB)
 server.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 * 1024
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'zip'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -86,11 +84,11 @@ def upload():
         filename = secure_filename(file.filename)
 
         # Save the file to the upload folder
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file_path = os.path.join(server.config['UPLOAD_FOLDER'], filename)
 
         # Make sure the upload folder exists, create if not
-        if not os.path.exists(app.config['UPLOAD_FOLDER']):
-            os.makedirs(app.config['UPLOAD_FOLDER'])
+        if not os.path.exists(server.config['UPLOAD_FOLDER']):
+            os.makedirs(server.config['UPLOAD_FOLDER'])
 
         # Save the file
         file.save(file_path)
