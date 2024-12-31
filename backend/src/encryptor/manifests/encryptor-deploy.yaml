@@ -5,14 +5,14 @@ metadata:
   labels:
     app: encryptor
 spec:
-  replicas: 4
+  replicas: 1
   selector:
     matchLabels:
       app: encryptor
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 8
+      maxSurge: 1
   template:
     metadata:
       labels:
