@@ -28,3 +28,5 @@ frontend/*.sln
 frontend/*.sw?
 
 
+backend/src/notification/*
+backend/src/converter/*
