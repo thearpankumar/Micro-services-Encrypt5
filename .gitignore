@@ -27,6 +27,7 @@ frontend/*.njsproj
 frontend/*.sln
 frontend/*.sw?
 
+.idea/*
 
 backend/src/notification/*
 backend/src/converter/*
