@@ -4,35 +4,68 @@ from auth import validate
 from auth_svc import access
 from bson.objectid import ObjectId
 from werkzeug.utils import secure_filename
+import psycopg2
 
+#TODO: save the file in structured format uid/folder/file
+#TODO: fetch from the reddis server
+#TODO: method to create new user
 server = Flask(__name__)
 
 # Folder where files will be uploaded
 UPLOAD_FOLDER = '/var/lib/upload/'
 server.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Set a limit for uploaded files (e.g., 16MB)
-server.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 * 1024
+# Set a limit for uploaded files (e.g., 2GB)
+server.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024 * 1024
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'zip'}
+
+def fetch_data_from_postgres(query: str):
+    # Fetch database credentials from environment variables
+    global cursor, connection
+    db_config = {
+        'dbname': os.getenv('DB_NAME'),
+        'user': os.getenv('DB_USER'),
+        'password': os.getenv('DB_PASSWORD'),
+        'host': os.getenv('DB_HOST'),
+        'port': os.getenv('DB_PORT', '5432')  # Default PostgreSQL port
+    }
+
+    try:
+        connection = psycopg2.connect(**db_config)
+        cursor = connection.cursor()
+        cursor.execute(query)
+        rows = cursor.fetchone()
+        return rows
+
+    except psycopg2.Error as e:
+        print(f"An error occurred while connecting to the database: {e}")
+        return None
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def publish_to_queue(filename):
+def publish_to_queue(filename,quee_name):
     try:
         # Establish a connection to RabbitMQ server
         connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
         channel = connection.channel()
 
         # Declare a queue
-        channel.queue_declare(queue='file_uploads', durable=True)
+        channel.queue_declare(queue=quee_name, durable=True)
 
         # Publish the filename to the queue
         channel.basic_publish(
             exchange='',
-            routing_key='file_uploads',
+            routing_key=quee_name,
             body=filename,
             properties=pika.BasicProperties(
                 delivery_mode=2,  # Make the message persistent
@@ -93,8 +126,11 @@ def upload():
         # Save the file
         file.save(file_path)
 
+        active_user = request.headers.get("active_user")
+
         # After saving, push the filename to RabbitMQ
-        publish_to_queue(filename)
+        publish_to_queue(filename, "encryptor")
+        publish_to_queue(active_user, "active_users")
 
         return "sucess!", 200
     else:

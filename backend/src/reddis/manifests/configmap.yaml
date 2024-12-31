@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reddis-configmap
+data:
+  RABBITMQ_HOST: "rabbitmq"  # RabbitMQ service name in Kubernetes
+  POSTGRES_HOST: "host.minikube.internal"  # PostgreSQL host (Minikube internal host)
+  REDIS_HOST: "host.minikube.internal"  # Redis host (Minikube internal host)
+  POSTGRES_DB: "encrypt5_main"  # PostgreSQL database name
+  POSTGRES_USER: "postgres"  # PostgreSQL username
+  POSTGRES_PASSWORD: "encrypt5"  # PostgreSQL password
+  REDIS_PORT: "6379"  # Redis port
+  REDIS_DB: "0"  # Redis database index

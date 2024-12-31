@@ -24,3 +24,4 @@ tqdm==4.62.3
 urllib3==1.26.8
 wrapt==1.13.3
 psycopg2-binary
+redis

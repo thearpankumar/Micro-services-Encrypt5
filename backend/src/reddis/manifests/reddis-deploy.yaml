@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reddis
+  labels:
+    app: reddis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reddis
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: reddis
+    spec:
+      containers:
+        - name: reddis
+          image: arpankumar1119/ec5-reddis
+          envFrom:
+            - configMapRef:
+                name: reddis-configmap
+            - secretRef:
+                name: reddis-secret

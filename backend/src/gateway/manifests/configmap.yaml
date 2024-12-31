@@ -4,3 +4,8 @@ metadata:
   name: gateway-configmap
 data:
   AUTH_SVC_ADDRESS: "auth:5000"
+  DB_NAME: ecrypt5_main
+  DB_USER: postgres
+  DB_PASSWORD: encrypt5
+  DB_HOST: host.minikube.internal
+  DB_PORT: 5432
