@@ -9,6 +9,8 @@ import psycopg2
 #TODO: save the file in structured format uid/folder/file
 #TODO: fetch from the reddis server
 #TODO: method to create new user
+#TODO: Create a mount point as persistanct storage for upload/downlaod
+
 server = Flask(__name__)
 
 # Folder where files will be uploaded
